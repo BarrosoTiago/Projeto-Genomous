@@ -1,3 +1,57 @@
+<script>
+  import { onMount } from 'svelte';
+
+  let fosseisInventario = [];
+  let dinheiro = 5000; // conforme RF-MVP-01
+  let rendaPorSegundo = 50;
+  const custoEscavacao = 250;
+
+  onMount(() => {
+    const intervalo = setInterval(() => {
+      dinheiro = dinheiro + rendaPorSegundo;
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalo)
+    };
+  });
+
+  const dinosDoBrasil = [
+    { id: 1, nome: 'Staurikosaurus pricei' },
+    { id: 2, nome: 'Irritator challengeri'},
+  ];
+
+
+  function escavar() {
+    if (dinheiro >= custoEscavacao) {
+      dinheiro -= custoEscavacao;
+      const dinoEncontrado = dinosDoBrasil[Math.floor(Math.random() * dinosDoBrasil.length)];
+      const fossilExistente = fosseisInventario.find(f => f.dinoId === dinoEncontrado.id);
+
+
+      if (fossilExistente) {
+        console.log(`Encontrou outro fóssil de ${dinoEncontrado}`)
+
+      } else {
+        const novoFossil = {
+          dinoId: dinoEncontrado.id,
+          nome: dinoEncontrado.nome,
+          progressoGenoma: 1,
+        };
+
+        fosseisInventario = [...fosseisInventario, novoFossil];
+        console.log(`Novo fóssil encontrado: ${novoFossil.nome}!`);
+      }
+
+      console.log('Escavação bem-sucedida! Novo saldo:', dinheiro);
+
+    } else {
+      alert('Dinheiro insuficiente para escavar.');
+    }
+
+  }
+</script>
+
 <main class="tela-principal">
   
   <header class="cabecalho">
@@ -22,7 +76,7 @@
       <div class="info-sitio">
         <div class="imagem-sitio">
           <p>Brasil</p> 
-          <button class="botao-escavar">Escavar</button>
+          <button class="botao-escavar" on:click={escavar}>Escavar</button>
         </div>
         <div class="lista-dinossauros">
           <h3>Espécimes Disponíveis:</h3>
@@ -35,11 +89,16 @@
     </section>
 
     <section class="secao-fosseis">
-      </section>
+      {#each fosseisInventario as fossil}
+        <div class="fossil">
+          <span>{fossil.nome} ({fossil.progressoGenoma}/100%)</span>
+          </div>
+      {/each}
+    </section>
   </div>
 
   <footer class="rodape">
-    <span class="info-dinheiro">2.4mi 💰</span>
+    <span class="info-dinheiro">{dinheiro} 💰</span>
     <span class="info-data">22/08/2025</span>
   </footer>
 
