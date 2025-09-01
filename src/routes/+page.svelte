@@ -2,9 +2,12 @@
   import { onMount } from 'svelte';
 
   let fosseisInventario = [];
+  let dinosNoParque = [];
   let dinheiro = 5000; // conforme RF-MVP-01
   let rendaPorSegundo = 50;
   const custoEscavacao = 250;
+  const custoPesquisa = 100;
+  const custoIncubacao = 1000;
 
   onMount(() => {
     const intervalo = setInterval(() => {
@@ -50,6 +53,50 @@
     }
 
   }
+
+  function pesquisar(fossilAlvo) {
+    
+    if (fossilAlvo.progressoGenoma >= 100) {
+      alert('Genoma já está 100% pesquisado!');
+      return; 
+    }
+    
+    if (dinheiro >= custoPesquisa) {
+      
+      dinheiro -= custoPesquisa;
+
+      
+      fossilAlvo.progressoGenoma += 10;
+
+      fosseisInventario = [...fosseisInventario];
+
+    } else {
+      alert('Dinheiro insuficiente para pesquisar!');
+    }
+  }
+
+  function incubar(fossilPronto) {
+    if (dinheiro >= custoIncubacao) {
+
+      dinheiro -= custoIncubacao;
+
+      const novoDinossauro = {
+        id: fossilPronto.dinoId,
+        nome: fossilPronto.nome,
+        renda: 250, 
+      };
+      
+      dinosNoParque = [...dinosNoParque, novoDinossauro];
+
+      fosseisInventario = fosseisInventario.filter(f => f.dinoId !== fossilPronto.dinoId);
+
+      rendaPorSegundo += novoDinossauro.renda;
+
+      alert(`Um ${novoDinossauro.nome} nasceu! Sua renda por segundo aumentou!`);
+    } else {
+      alert('Dinheiro insuficiente para incubar!');
+    }
+  }
 </script>
 
 <main class="tela-principal">
@@ -92,7 +139,17 @@
       {#each fosseisInventario as fossil}
         <div class="fossil">
           <span>{fossil.nome} ({fossil.progressoGenoma}/100%)</span>
-          </div>
+          
+          {#if fossil.progressoGenoma < 100}
+            <button on:click={() => pesquisar(fossil)}>
+              Pesquisar (${custoPesquisa})
+            </button>
+          {:else}
+            <button class="botao-incubar" on:click={() => incubar(fossil)}>
+              Incubar (${custoIncubacao})
+            </button>
+          {/if}
+        </div>
       {/each}
     </section>
   </div>
