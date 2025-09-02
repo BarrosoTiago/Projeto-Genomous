@@ -1,9 +1,11 @@
 <script>
   import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
 
   let fosseisInventario = [];
   let dinosNoParque = [];
   let escavacaoEmAndamento = false;
+  let alertaFossil = '';
   let dinheiro = 5000; // conforme RF-MVP-01
   let rendaPorSegundo = 30;
   const custoEscavacao = 250;
@@ -19,6 +21,19 @@
       clearInterval(intervalo)
     };
   });
+
+  const tiposDeFosseis = [
+    { nome: 'Âmbar com Inseto', cargaGenoma: 35, raridade: 'Lendário' },
+    { nome: 'Crânio', cargaGenoma: 25, raridade: 'Muito Raro' },
+    { nome: 'Pelve', cargaGenoma: 18, raridade: 'Incomum' },
+    { nome: 'Fêmur', cargaGenoma: 15, raridade: 'Incomum' },
+    { nome: 'Garra', cargaGenoma: 12, raridade: 'Comum' },
+    { nome: 'Úmero', cargaGenoma: 9, raridade: 'Comum' },
+    { nome: 'Vértebra', cargaGenoma: 8, raridade: 'Comum' },
+    { nome: 'Costela', cargaGenoma: 6, raridade: 'Muito Comum' },
+    { nome: 'Impressão de Pele', cargaGenoma: 5, raridade: 'Muito Comum' },
+    { nome: 'Dente', cargaGenoma: 4, raridade: 'Muito Comum' },
+  ];
 
   const dinosDoBrasil = [
     { id: 1, nome: 'Staurikosaurus pricei' },
@@ -39,43 +54,48 @@
     dinheiro -= custoEscavacao;
     escavacaoEmAndamento = true;
 
-    console.log('Escavação iniciada... Aguarde 10 segundos.');
+    console.log('Escavação iniciada...');
 
     setTimeout(() => {
+      let mensagemAlerta = ''; 
       const dinoEncontrado = dinosDoBrasil[Math.floor(Math.random() * dinosDoBrasil.length)];
+      const parteEncontrada = tiposDeFosseis[Math.floor(Math.random() * tiposDeFosseis.length)];
       const fossilExistente = fosseisInventario.find(f => f.dinoId === dinoEncontrado.id);
 
       if (fossilExistente) {
-        fossilExistente.progressoGenoma += 15
-        
+        fossilExistente.progressoGenoma += parteEncontrada.cargaGenoma;
+        mensagemAlerta = `Um(a) ${parteEncontrada.nome} de ${fossilExistente.nome}! (+${parteEncontrada.cargaGenoma}%)`;
+
         if (fossilExistente.progressoGenoma > 100) {
           fossilExistente.progressoGenoma = 100;
         }
-
-        fosseisInventario = [...fosseisInventario];
         
-        console.log(`Progresso do genoma de ${fossilExistente.nome} aumentou para ${fossilExistente.progressoGenoma}%!`);
+        console.log(`Encontrou um(a) ${parteEncontrada.nome} de ${fossilExistente.nome}! Progresso +${parteEncontrada.cargaGenoma}%.`);
 
       } else {
         const novoFossil = {
           dinoId: dinoEncontrado.id,
           nome: dinoEncontrado.nome,
-          progressoGenoma: 1,
-          // Estados possíveis para o novo fóssil:
-          // 'coletando': ainda precisamos de mais amostras
-          // 'pesquisando': a pesquisa de viabilidade está em andamento
-          // 'pesquisa_falhou': a pesquisa falhou e precisa ser reiniciada
-          // 'pronto_para_incubar': a pesquisa foi um sucesso
+          progressoGenoma: parteEncontrada.cargaGenoma,
           estado: 'coletando', 
         };
         fosseisInventario = [...fosseisInventario, novoFossil];
-        console.log(`Novo fóssil encontrado: ${novoFossil.nome}!`);
+        mensagemAlerta = `NOVA ESPÉCIE! Um(a) ${parteEncontrada.nome} de ${novoFossil.nome} (+${parteEncontrada.cargaGenoma}%)`;
+        console.log(`Nova espécie descoberta: ${dinoEncontrado.nome}! O primeiro achado foi um(a) ${parteEncontrada.nome} (+${parteEncontrada.cargaGenoma}%).`);
       }
       
+      alertaFossil = mensagemAlerta;
+      
+      setTimeout(() => {
+        alertaFossil = '';
+      }, 5000); 
+
+      fosseisInventario = [...fosseisInventario];
+        
       escavacaoEmAndamento = false;
       console.log('Escavação concluída.');
 
-    }, 10000);
+    }, 10000); 
   }
 
 
@@ -140,6 +160,13 @@
 
 <main class="tela-principal">
   
+  {#if alertaFossil}
+    <div class="alerta-visual" transition:fade>
+      <p><strong>Fóssil Encontrado!</strong></p>
+      <p>{alertaFossil}</p>
+    </div>
+  {/if}
+
   <header class="cabecalho">
     <h1>GENOMOUS - Área de Pesquisa</h1>
     <button>Salvar Jogo</button>
@@ -251,7 +278,7 @@
     justify-content: space-between; 
     align-items: center;
     padding: 0.5rem 1rem;
-    background-color: rgba(0, 0, 0, 0.2); 
+    background-color: rgba(0, 0, 0, 0.429); 
     border: 1px solid #8b9a3b;
   }
 
@@ -391,5 +418,22 @@
     background-color: #8b9a3b;
     color: #1a1a1a;
     font-weight: bold;
+  }
+
+  .alerta-visual {
+    position: fixed; 
+    top: 20px;
+    right: 20px;
+    background-color: #c7d187; 
+    color: #1a1a1a;
+    padding: 1rem;
+    border: 2px solid #2e4b26;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    z-index: 1000; 
+    max-width: 300px;
+  }
+  .alerta-visual p {
+    margin: 0;
   }
 </style>
