@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 
+  let vistaAtual = 'pesquisa';
+
   let fosseisInventario = [];
   let dinosNoParque = [];
   let escavacaoEmAndamento = false;
@@ -40,7 +42,7 @@
     { id: 2, nome: 'Irritator challengeri'},
     { id: 3, nome: 'Oxalaia quilombensis'},
     { id: 4, nome: 'Santanaraptor placidus'},
-    { id: 5, nome: 'Uberabatitan Riberoi'},
+    { id: 5, nome: 'Uberabatitan riberoi'},
     { id: 6, nome: 'Pycnonemosaurus nevesi'},
   ];
 
@@ -172,76 +174,104 @@
     <button>Salvar Jogo</button>
   </header>
 
-  <div class="container-jogo">
-    <div class="cabecalho-container">
-      <h2>Sítios de Escavação:</h2>
-      <button class="botao-navegacao" title="Ir para a Área dos Dinossauros"></button>
-    </div>
+<div class="container-jogo">
 
-    <section class="secao-escavacao">
-      <nav class="abas-sitios">
-        <button class="aba-sitio ativo">Brasil</button>
-        <button class="aba-sitio">Argentina</button>
-        <button class="aba-sitio">China</button>
-        <button class="aba-sitio">EUA</button>
-      </nav>
+    {#if vistaAtual === 'pesquisa'}
+      <div class="cabecalho-container">
+        <h2>Sítios de Escavação:</h2>
+        <button on:click={() => vistaAtual = 'especimes'} class="botao-navegacao" title="Ir para a Área dos Dinossauros"></button>
+      </div>
 
-      <div class="info-sitio">
-        <div class="imagem-sitio">
-          <p>Brasil</p> 
-          <button class="botao-escavar" on:click={escavar} disabled={escavacaoEmAndamento}>
-            {#if escavacaoEmAndamento}
-              Escavando...
-            {:else}
-              Escavar
-            {/if}
-          </button>
+      <section class="secao-escavacao">
+        <nav class="abas-sitios">
+          <button class="aba-sitio ativo">Brasil</button>
+          <button class="aba-sitio">Argentina</button>
+          <button class="aba-sitio">China</button>
+          <button class="aba-sitio">EUA</button>
+        </nav>
+
+        <div class="info-sitio">
+          <div class="imagem-sitio">
+            <p>Brasil</p> 
+            <button class="botao-escavar" on:click={escavar} disabled={escavacaoEmAndamento}>
+              {#if escavacaoEmAndamento}
+                Escavando...
+              {:else}
+                Escavar
+              {/if}
+            </button>
+          </div>
+          <div class="lista-dinossauros">
+            <h3>Espécimes Disponíveis:</h3>
+            <ul>
+              {#each dinosDoBrasil as dino}
+                <li>{dino.nome}</li>
+              {/each}
+            </ul>
+          </div>
         </div>
-        <div class="lista-dinossauros">
-          <h3>Espécimes Disponíveis:</h3>
+      </section>
+
+      <section class="secao-fosseis">
+        {#each fosseisInventario as fossil}
+          <div class="fossil">
+            <span>Genoma de {fossil.nome} ({fossil.progressoGenoma}/100%)</span>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" style="width: {fossil.progressoGenoma}%;"></div>
+            </div>
+            {#if fossil.progressoGenoma < 100}
+              <p class="info-estado">Colete mais fósseis para completar o genoma.</p>
+            {:else if fossil.estado === 'coletando' || fossil.estado === 'pesquisa_falhou'}
+              {#if fossil.estado === 'pesquisa_falhou'}
+                <p class="info-estado erro">Pesquisa anterior falhou!</p>
+              {/if}
+              <button on:click={() => pesquisar(fossil)}>
+                Pesquisar (${custoPesquisa})
+              </button>
+            {:else if fossil.estado === 'pesquisando'}
+              <p class="info-estado">Pesquisando viabilidade...</p>
+            {:else if fossil.estado === 'pronto_para_incubar'}
+              <button class="botao-incubar" on:click={() => incubar(fossil)}>
+                Incubar (${custoIncubacao})
+              </button>
+            {/if}
+          </div>
+        {/each}
+      </section>
+
+    {:else if vistaAtual === 'especimes'}
+      <div class="cabecalho-container">
+        <h2>Área dos Dinossauros</h2>
+        <button on:click={() => vistaAtual = 'pesquisa'} class="botao-navegacao botao-voltar" title="Voltar para a Área de Pesquisa"></button>
+      </div>
+
+      <div class="conteudo-especimes">
+        <section class="area-padoques">
+          <h3>Incubação</h3>
+          <div class="grid-padoques">
+            {#each dinosNoParque as dino}
+              <div class="slot-padoque ocupado">
+                <span>{dino.nome}</span>
+              </div>
+            {/each}
+            <div class="slot-padoque vazio"></div>
+            <div class="slot-padoque vazio"></div>
+            <div class="slot-padoque vazio"></div>
+            <div class="slot-padoque vazio"></div>
+          </div>
+        </section>
+
+        <section class="catalogo-especimes">
+          <h3>Catálogo</h3>
           <ul>
             {#each dinosDoBrasil as dino}
               <li>{dino.nome}</li>
             {/each}
           </ul>
-        </div>
+        </section>
       </div>
-    </section>
-
-    <section class="secao-fosseis">
-      {#each fosseisInventario as fossil}
-        <div class="fossil">
-          <span>Genoma de {fossil.nome} ({fossil.progressoGenoma}/100%)</span>
-          
-          <div class="progress-bar-track">
-            <div class="progress-bar-fill" style="width: {fossil.progressoGenoma}%;"></div>
-          </div>
-
-          {#if fossil.progressoGenoma < 100}
-            <p class="info-estado">Colete mais fósseis para completar o genoma.</p>
-          
-          {:else if fossil.estado === 'coletando' || fossil.estado === 'pesquisa_falhou'}
-            {#if fossil.estado === 'pesquisa_falhou'}
-              <p class="info-estado erro">Pesquisa anterior falhou!</p>
-            {/if}
-            <button on:click={() => pesquisar(fossil)}>
-              Pesquisar (${custoPesquisa})
-            </button>
-            
-          {:else if fossil.estado === 'pesquisando'}
-            <p class="info-estado">Pesquisando viabilidade...</p>
-            
-          {:else if fossil.estado === 'pronto_para_incubar'}
-            <button class="botao-incubar" on:click={() => incubar(fossil)}>
-              Incubar (${custoIncubacao})
-            </button>
-            
-          {/if}
-
-        </div>
-      {/each}
-    </section>
-  </div>
+    {/if}
+    </div>
 
   <footer class="rodape">
     <span class="info-dinheiro">{dinheiro} 💰 (+{rendaPorSegundo}/s)</span>
@@ -436,4 +466,62 @@
   .alerta-visual p {
     margin: 0;
   }
+
+  /* ESTILOS PARA A ÁREA DOS ESPÉCIMES */
+.conteudo-especimes {
+  display: flex;
+  gap: 1rem;
+  flex-grow: 1; 
+}
+
+.area-padoques, .catalogo-especimes {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border: 1px solid #8b9a3b;
+}
+
+.area-padoques {
+  flex-basis: 60%; 
+}
+
+.catalogo-especimes {
+  flex-basis: 40%; 
+}
+
+.grid-padoques {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 1rem;
+}
+
+.slot-padoque {
+  height: 100px;
+  border: 1px dashed #8b9a3b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.slot-padoque.ocupado {
+  background-color: rgba(139, 154, 59, 0.2);
+  border-style: solid;
+}
+
+.catalogo-especimes ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.catalogo-especimes li {
+  padding: 0.5rem;
+  border-bottom: 1px solid #3c5d33;
+}
+
+.botao-voltar {
+  width: 50px;
+  height: 50px;
+  background-image: url(../lib/assets/images/botao-pesquisa.png);
+}
 </style>
