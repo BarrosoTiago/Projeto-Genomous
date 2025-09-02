@@ -42,12 +42,27 @@
       const fossilExistente = fosseisInventario.find(f => f.dinoId === dinoEncontrado.id);
 
       if (fossilExistente) {
-        console.log(`Encontrou outro fóssil de ${dinoEncontrado.nome}, mas já está no inventário.`);
+        fossilExistente.progressoGenoma += 15
+        
+        if (fossilExistente.progressoGenoma > 100) {
+          fossilExistente.progressoGenoma = 100;
+        }
+
+        fosseisInventario = [...fosseisInventario];
+        
+        console.log(`Progresso do genoma de ${fossilExistente.nome} aumentou para ${fossilExistente.progressoGenoma}%!`);
+
       } else {
         const novoFossil = {
           dinoId: dinoEncontrado.id,
           nome: dinoEncontrado.nome,
           progressoGenoma: 1,
+          // Estados possíveis para o novo fóssil:
+          // 'coletando': ainda precisamos de mais amostras
+          // 'pesquisando': a pesquisa de viabilidade está em andamento
+          // 'pesquisa_falhou': a pesquisa falhou e precisa ser reiniciada
+          // 'pronto_para_incubar': a pesquisa foi um sucesso
+          estado: 'coletando', 
         };
         fosseisInventario = [...fosseisInventario, novoFossil];
         console.log(`Novo fóssil encontrado: ${novoFossil.nome}!`);
@@ -56,29 +71,43 @@
       escavacaoEmAndamento = false;
       console.log('Escavação concluída.');
 
-    }, 30000);
+    }, 10000);
   }
 
 
   function pesquisar(fossilAlvo) {
     
-    if (fossilAlvo.progressoGenoma >= 100) {
-      alert('Genoma já está 100% pesquisado!');
-      return; 
+    if (fossilAlvo.estado === 'pesquisando') return; 
+    if (dinheiro < custoPesquisa) {
+      alert('Dinheiro insuficiente para iniciar a pesquisa.');
+      return;
     }
-    
-    if (dinheiro >= custoPesquisa) {
-      
-      dinheiro -= custoPesquisa;
 
-      
-      fossilAlvo.progressoGenoma += 10;
+    dinheiro -= custoPesquisa;
+    fossilAlvo.estado = 'pesquisando';
+    fosseisInventario = [...fosseisInventario]; 
+
+    const tempoDePesquisa = 60000; 
+    console.log(`Iniciando pesquisa de viabilidade para ${fossilAlvo.nome}. Duração: ${tempoDePesquisa / 1000}s.`);
+
+    setTimeout(() => {
+      const chanceDeSucesso = Math.random(); 
+
+      if (chanceDeSucesso < 0.75) {
+        // 75% de chance de sucesso
+        fossilAlvo.estado = 'pronto_para_incubar';
+        console.log(`Pesquisa de ${fossilAlvo.nome} concluída com sucesso!`);
+        alert(`Pesquisa de ${fossilAlvo.nome} concluída com sucesso! A incubação agora está disponível.`);
+      } else {
+        // 25% de chance de falha
+        fossilAlvo.estado = 'pesquisa_falhou';
+        console.log(`A pesquisa de ${fossilAlvo.nome} falhou! Contaminação na amostra.`);
+        alert(`A pesquisa de ${fossilAlvo.nome} falhou! Será necessário tentar novamente.`);
+      }
 
       fosseisInventario = [...fosseisInventario];
 
-    } else {
-      alert('Dinheiro insuficiente para pesquisar!');
-    }
+    }, tempoDePesquisa);
   }
 
   function incubar(fossilPronto) {
@@ -153,14 +182,26 @@
           <span>{fossil.nome} ({fossil.progressoGenoma}/100%)</span>
           
           {#if fossil.progressoGenoma < 100}
+            <p class="info-estado">Colete mais fósseis para completar o genoma.</p>
+          
+          {:else if fossil.estado === 'coletando' || fossil.estado === 'pesquisa_falhou'}
+            {#if fossil.estado === 'pesquisa_falhou'}
+              <p class="info-estado erro">Pesquisa anterior falhou!</p>
+            {/if}
             <button on:click={() => pesquisar(fossil)}>
               Pesquisar (${custoPesquisa})
             </button>
-          {:else}
+            
+          {:else if fossil.estado === 'pesquisando'}
+            <p class="info-estado">Pesquisando viabilidade...</p>
+            
+          {:else if fossil.estado === 'pronto_para_incubar'}
             <button class="botao-incubar" on:click={() => incubar(fossil)}>
               Incubar (${custoIncubacao})
             </button>
+            
           {/if}
+
         </div>
       {/each}
     </section>
