@@ -5,7 +5,7 @@
   let dinosNoParque = [];
   let escavacaoEmAndamento = false;
   let dinheiro = 5000; // conforme RF-MVP-01
-  let rendaPorSegundo = 50;
+  let rendaPorSegundo = 30;
   const custoEscavacao = 250;
   const custoPesquisa = 100;
   const custoIncubacao = 1000;
@@ -23,6 +23,10 @@
   const dinosDoBrasil = [
     { id: 1, nome: 'Staurikosaurus pricei' },
     { id: 2, nome: 'Irritator challengeri'},
+    { id: 3, nome: 'Oxalaia quilombensis'},
+    { id: 4, nome: 'Santanaraptor placidus'},
+    { id: 5, nome: 'Uberabatitan Riberoi'},
+    { id: 6, nome: 'Pycnonemosaurus nevesi'},
   ];
 
   function escavar() {
@@ -169,9 +173,10 @@
         <div class="lista-dinossauros">
           <h3>Espécimes Disponíveis:</h3>
           <ul>
-            <li>Staurikosaurus pricei</li>
-            <li>Irritator challengeri</li>
-            </ul>
+            {#each dinosDoBrasil as dino}
+              <li>{dino.nome}</li>
+            {/each}
+          </ul>
         </div>
       </div>
     </section>
@@ -179,8 +184,12 @@
     <section class="secao-fosseis">
       {#each fosseisInventario as fossil}
         <div class="fossil">
-          <span>{fossil.nome} ({fossil.progressoGenoma}/100%)</span>
+          <span>Genoma de {fossil.nome} ({fossil.progressoGenoma}/100%)</span>
           
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width: {fossil.progressoGenoma}%;"></div>
+          </div>
+
           {#if fossil.progressoGenoma < 100}
             <p class="info-estado">Colete mais fósseis para completar o genoma.</p>
           
@@ -311,14 +320,24 @@
     background-position: center;
     width: 20%;
     color: #2e4b26;
+  }
 
-}
 
   .lista-dinossauros ul {
     list-style-type: none;
     padding: 0;
-    margin: 0;
+    margin: 0.5rem 0 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);  /* Define duas colunas de largura igual */
+    gap: 0.5rem;
   }
+
+  .lista-dinossauros li {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border: 1px solid #8b9a3b;
+  }
+
 
   /* SEÇÃO DE FÓSSEIS (LAYOUT HORIZONTAL) */
   .secao-fosseis {
@@ -338,6 +357,21 @@
     gap: 0.5rem;
     min-width: 150px;
   }
+
+  .progress-bar-track {
+    width: 100%;
+    height: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #8b9a3b;
+    border-radius: 5px;
+    overflow: hidden; 
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background-color: #8b9a3b; 
+    transition: width 0.8s ease-in-out; 
+}
 
   /* ESTILO DOS ELEMENTOS INTERATIVOS */
   button {
