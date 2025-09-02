@@ -3,6 +3,7 @@
 
   let fosseisInventario = [];
   let dinosNoParque = [];
+  let escavacaoEmAndamento = false;
   let dinheiro = 5000; // conforme RF-MVP-01
   let rendaPorSegundo = 50;
   const custoEscavacao = 250;
@@ -24,35 +25,40 @@
     { id: 2, nome: 'Irritator challengeri'},
   ];
 
-
   function escavar() {
-    if (dinheiro >= custoEscavacao) {
-      dinheiro -= custoEscavacao;
+    if (escavacaoEmAndamento) return; 
+    if (dinheiro < custoEscavacao) {
+      alert('Dinheiro insuficiente para escavar.');
+      return; 
+    }
+
+    dinheiro -= custoEscavacao;
+    escavacaoEmAndamento = true;
+
+    console.log('Escavação iniciada... Aguarde 10 segundos.');
+
+    setTimeout(() => {
       const dinoEncontrado = dinosDoBrasil[Math.floor(Math.random() * dinosDoBrasil.length)];
       const fossilExistente = fosseisInventario.find(f => f.dinoId === dinoEncontrado.id);
 
-
       if (fossilExistente) {
-        console.log(`Encontrou outro fóssil de ${dinoEncontrado}`)
-
+        console.log(`Encontrou outro fóssil de ${dinoEncontrado.nome}, mas já está no inventário.`);
       } else {
         const novoFossil = {
           dinoId: dinoEncontrado.id,
           nome: dinoEncontrado.nome,
           progressoGenoma: 1,
         };
-
         fosseisInventario = [...fosseisInventario, novoFossil];
         console.log(`Novo fóssil encontrado: ${novoFossil.nome}!`);
       }
+      
+      escavacaoEmAndamento = false;
+      console.log('Escavação concluída.');
 
-      console.log('Escavação bem-sucedida! Novo saldo:', dinheiro);
-
-    } else {
-      alert('Dinheiro insuficiente para escavar.');
-    }
-
+    }, 30000);
   }
+
 
   function pesquisar(fossilAlvo) {
     
@@ -123,7 +129,13 @@
       <div class="info-sitio">
         <div class="imagem-sitio">
           <p>Brasil</p> 
-          <button class="botao-escavar" on:click={escavar}>Escavar</button>
+          <button class="botao-escavar" on:click={escavar} disabled={escavacaoEmAndamento}>
+            {#if escavacaoEmAndamento}
+              Escavando...
+            {:else}
+              Escavar
+            {/if}
+          </button>
         </div>
         <div class="lista-dinossauros">
           <h3>Espécimes Disponíveis:</h3>
@@ -155,7 +167,7 @@
   </div>
 
   <footer class="rodape">
-    <span class="info-dinheiro">{dinheiro} 💰</span>
+    <span class="info-dinheiro">{dinheiro} 💰 (+{rendaPorSegundo}/s)</span>
     <span class="info-data">22/08/2025</span>
   </footer>
 
