@@ -21,6 +21,8 @@
   const pontosEstudo = 1; // ganho ao estudar
 
   onMount(() => {
+    carregarJogo();
+
     const intervalo = setInterval(() => {
       dinheiro = dinheiro + rendaPorSegundo;
     }, 1000);
@@ -330,6 +332,50 @@
     const rendaBaseDoParque = 30;
     rendaPorSegundo = rendaBaseDoParque + novaRendaTotal;
   }
+
+
+  function salvarJogo() {
+    const estadoDoJogo = {
+      dinheiro: dinheiro,
+      fosseisInventario: fosseisInventario,
+      dinosNoParque: dinosNoParque,
+      proximoIdInstanciaDino: proximoIdInstanciaDino,
+      // Nota: não precisamos salvar rendaPorSegundo, pois ela é recalculada ao carregar.
+    };
+
+    try {
+      const estadoEmString = JSON.stringify(estadoDoJogo);
+      localStorage.setItem('genomousSave', estadoEmString);
+      alert('Jogo Salvo com Sucesso!'); 
+    } catch (error) {
+      console.error('Erro ao salvar o jogo:', error);
+      alert('Ocorreu um erro ao salvar o jogo.');
+    }
+  }
+
+  function carregarJogo() {
+    try {
+      const estadoSalvoEmString = localStorage.getItem('genomousSave');
+
+      if (estadoSalvoEmString) {
+        const estadoSalvo = JSON.parse(estadoSalvoEmString);
+
+        // É uma boa prática verificar se as chaves existem para evitar erros
+        // caso o formato do save mude no futuro.
+        dinheiro = estadoSalvo.dinheiro || 5000;
+        fosseisInventario = estadoSalvo.fosseisInventario || [];
+        dinosNoParque = estadoSalvo.dinosNoParque || [];
+        proximoIdInstanciaDino = estadoSalvo.proximoIdInstanciaDino || 1;
+
+        // Após carregar os dinos, é crucial recalcular a renda total
+        recalcularRendaTotal();
+        
+        console.log('Jogo carregado com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar o jogo salvo:', error);
+    }
+  }
 </script>
 
 <main class="tela-principal">
@@ -343,7 +389,7 @@
 
   <header class="cabecalho">
     <h1>GENOMOUS - Área de Pesquisa</h1>
-    <button>Salvar Jogo</button>
+    <button on:click={salvarJogo}>Salvar Jogo</button>
   </header>
 
 <div class="container-jogo">
