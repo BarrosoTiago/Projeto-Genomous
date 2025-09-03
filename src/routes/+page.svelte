@@ -8,8 +8,10 @@
   let dinosNoParque = [];
   let escavacaoEmAndamento = false;
   let alertaFossil = '';
+  let proximoIdInstanciaDino = 1;
+  let dinoSelecionado = null;
   let dinheiro = 5000; // conforme RF-MVP-01
-  let rendaPorSegundo = 30;
+  let rendaPorSegundo = 10000;
   const custoEscavacao = 250;
   const custoPesquisa = 100;
   const custoIncubacao = 1000;
@@ -38,12 +40,78 @@
   ];
 
   const dinosDoBrasil = [
-    { id: 1, nome: 'Staurikosaurus pricei' },
-    { id: 2, nome: 'Irritator challengeri'},
-    { id: 3, nome: 'Oxalaia quilombensis'},
-    { id: 4, nome: 'Santanaraptor placidus'},
-    { id: 5, nome: 'Uberabatitan riberoi'},
-    { id: 6, nome: 'Pycnonemosaurus nevesi'},
+    { 
+      id: 1, 
+      nome: 'Staurikosaurus pricei',
+      rendaGerada: 80,
+      custoManutencao: 30,
+      periodo: 'Triássico Superior',
+      alimentacao: 'Carnívoro',
+      caracteristicas: 'Bípede, ágil, um dos primeiros dinossauros conhecidos.',
+      tamanho: '2m de comprimento, 0.8m de altura',
+      peso: '30 kg',
+      tamanhoVsHumano: 'Cerca de metade da altura de um humano (0.47x)'
+    },
+    { 
+      id: 2, 
+      nome: 'Irritator challengeri',
+      rendaGerada: 150,
+      custoManutencao: 50,
+      periodo: 'Cretáceo Inferior',
+      alimentacao: 'Piscívoro/Carnívoro',
+      caracteristicas: 'Crânio longo e estreito, similar ao de um crocodilo, com dentes cônicos.',
+      tamanho: '8m de comprimento',
+      peso: '1 tonelada',
+      tamanhoVsHumano: 'Comprimento de quase 5 humanos enfileirados (4.7x)'
+    },
+    { 
+      id: 3, 
+      nome: 'Oxalaia quilombensis',
+      rendaGerada: 280,
+      custoManutencao: 80,
+      periodo: 'Cretáceo Superior',
+      alimentacao: 'Piscívoro/Carnívoro',
+      caracteristicas: 'O maior espinossaurídeo do Brasil, provavelmente com uma vela nas costas.',
+      tamanho: '14m de comprimento',
+      peso: '5 a 7 toneladas',
+      tamanhoVsHumano: 'Comprimento de mais de 8 humanos enfileirados (8.2x)'
+    },
+    { 
+      id: 4, 
+      nome: 'Santanaraptor placidus',
+      rendaGerada: 70,
+      custoManutencao: 25,
+      periodo: 'Cretáceo Inferior',
+      alimentacao: 'Carnívoro',
+      caracteristicas: 'Predador pequeno e veloz, parente primitivo do T-Rex.',
+      tamanho: '1.5m de comprimento',
+      peso: '20 kg',
+      tamanhoVsHumano: 'Ligeiramente menor em comprimento que um humano (0.88x)'
+    },
+    { 
+      id: 5, 
+      nome: 'Uberabatitan riberoi',
+      rendaGerada: 300,
+      custoManutencao: 120,
+      periodo: 'Cretáceo Superior',
+      alimentacao: 'Herbívoro',
+      caracteristicas: 'Titanossauro de pescoço longo com corpo robusto e pernas como colunas.',
+      tamanho: '15m de comprimento, 4m de altura',
+      peso: '16 toneladas',
+      tamanhoVsHumano: 'Altura de mais de 2 vezes um humano (2.35x)'
+    },
+    { 
+      id: 6, 
+      nome: 'Pycnonemosaurus nevesi',
+      rendaGerada: 350,
+      custoManutencao: 100,
+      periodo: 'Cretáceo Superior',
+      alimentacao: 'Carnívoro',
+      caracteristicas: 'Grande predador com braços muito curtos e cabeça robusta.',
+      tamanho: '9m de comprimento, altura de 3m',
+      peso: '2 a 3 toneladas',
+      tamanhoVsHumano: 'Quase 2 vezes a altura de um humano (1.76x)'
+    },
   ];
 
   function escavar() {
@@ -97,7 +165,7 @@
       escavacaoEmAndamento = false;
       console.log('Escavação concluída.');
 
-    }, 10000); 
+    }, 100); 
   }
 
 
@@ -137,26 +205,51 @@
   }
 
   function incubar(fossilPronto) {
-    if (dinheiro >= custoIncubacao) {
-
-      dinheiro -= custoIncubacao;
-
-      const novoDinossauro = {
-        id: fossilPronto.dinoId,
-        nome: fossilPronto.nome,
-        renda: 250, 
-      };
-      
-      dinosNoParque = [...dinosNoParque, novoDinossauro];
-
-      fosseisInventario = fosseisInventario.filter(f => f.dinoId !== fossilPronto.dinoId);
-
-      rendaPorSegundo += novoDinossauro.renda;
-
-      alert(`Um ${novoDinossauro.nome} nasceu! Sua renda por segundo aumentou!`);
-    } else {
+    if (dinheiro < custoIncubacao) {
       alert('Dinheiro insuficiente para incubar!');
+      return;
     }
+    
+    // 1. Encontra os dados completos da espécie no nosso catálogo
+    const especieInfo = dinosDoBrasil.find(d => d.id === fossilPronto.dinoId);
+    if (!especieInfo) return; // Segurança: Se não encontrar a espécie, cancela.
+
+    dinheiro -= custoIncubacao;
+
+    const novoDinossauro = {
+      instanceId: proximoIdInstanciaDino++,
+      id: fossilPronto.dinoId,
+      nome: fossilPronto.nome,
+      renda: especieInfo.rendaGerada,      
+      custo: especieInfo.custoManutencao,  
+    };
+    
+    dinosNoParque = [...dinosNoParque, novoDinossauro];
+    fosseisInventario = fosseisInventario.filter(f => f.dinoId !== fossilPronto.dinoId);
+
+    recalcularRendaTotal();
+
+    alert(`Um ${novoDinossauro.nome} nasceu! A economia do seu parque foi atualizada.`);
+  }
+
+  function selecionarDino(dino) {
+    dinoSelecionado = dino;
+  }
+
+    $: infoCientificaDino = dinoSelecionado // <- reage a seleção do dino puxando as informações dele
+    ? dinosDoBrasil.find(d => d.id === dinoSelecionado.id) 
+    : null;
+
+  function recalcularRendaTotal() {
+    let novaRendaTotal = 0;
+    
+    for (const dino of dinosNoParque) {
+      novaRendaTotal += dino.renda;
+      novaRendaTotal -= dino.custo;
+    }
+
+    const rendaBaseDoParque = 30;
+    rendaPorSegundo = rendaBaseDoParque + novaRendaTotal;
   }
 </script>
 
@@ -246,26 +339,33 @@
       </div>
 
       <div class="conteudo-especimes">
-        <section class="area-padoques">
-          <h3>Incubação</h3>
-          <div class="grid-padoques">
-            {#each dinosNoParque as dino}
-              <div class="slot-padoque ocupado">
-                <span>{dino.nome}</span>
-              </div>
-            {/each}
-            <div class="slot-padoque vazio"></div>
-            <div class="slot-padoque vazio"></div>
-            <div class="slot-padoque vazio"></div>
-            <div class="slot-padoque vazio"></div>
-          </div>
-        </section>
+        <section class="area-detalhes">
+          {#if dinoSelecionado && infoCientificaDino}
+            <h3>#{dinoSelecionado.instanceId}: {dinoSelecionado.nome}</h3>
+            
+            <div class="info-dino"><strong>Período:</strong> <span>{infoCientificaDino.periodo}</span></div>
+            <div class="info-dino"><strong>Alimentação:</strong> <span>{infoCientificaDino.alimentacao}</span></div>
+            <div class="info-dino"><strong>Tamanho:</strong> <span>{infoCientificaDino.tamanho}</span></div>
+            <div class="info-dino"><strong>Peso:</strong> <span>{infoCientificaDino.peso}</span></div>
+            <div class="info-dino"><strong>Comparativo:</strong> <span>{infoCientificaDino.tamanhoVsHumano}</span></div>
+            <div class="info-dino descricao"><strong>Características:</strong> <p>{infoCientificaDino.caracteristicas}</p></div>
+            <div class="info-dino renda"><strong>Renda Gerada:</strong> <span>${dinoSelecionado.renda}/s</span></div>
 
-        <section class="catalogo-especimes">
-          <h3>Catálogo</h3>
+          {:else}
+            <div class="detalhes-placeholder">
+              <p>Selecione um dinossauro na lista para ver os detalhes.</p>
+            </div>
+          {/if}
+        </section>
+        <section class="lista-mestre">
+          <h3>Dinossauros no Parque ({dinosNoParque.length})</h3>
           <ul>
-            {#each dinosDoBrasil as dino}
-              <li>{dino.nome}</li>
+            {#each dinosNoParque as dino (dino.instanceId)}
+              <li on:click={() => selecionarDino(dino)} class:ativo={dino === dinoSelecionado}>
+                <span>#{dino.instanceId} - {dino.nome}</span>
+              </li>
+            {:else}
+              <li>Nenhum dinossauro no parque.</li>
             {/each}
           </ul>
         </section>
@@ -467,61 +567,100 @@
     margin: 0;
   }
 
-  /* ESTILOS PARA A ÁREA DOS ESPÉCIMES */
-.conteudo-especimes {
-  display: flex;
-  gap: 1rem;
-  flex-grow: 1; 
-}
+    /* ESTILOS PARA A ÁREA DOS ESPÉCIMES */
+  .conteudo-especimes {
+    display: flex;
+    gap: 1rem;
+    flex-grow: 1; 
+    min-height: 0;
+  }
 
-.area-padoques, .catalogo-especimes {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  border: 1px solid #8b9a3b;
-}
+  .area-padoques, .catalogo-especimes {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border: 1px solid #8b9a3b;
+  }
 
-.area-padoques {
-  flex-basis: 60%; 
-}
+  .area-padoques {
+    flex-basis: 60%; 
+  }
 
-.catalogo-especimes {
-  flex-basis: 40%; 
-}
+  .catalogo-especimes {
+    flex-basis: 40%; 
+  }
 
-.grid-padoques {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 1rem;
-}
+  /* ESTILOS PARA O LAYOUT MASTER-DETAIL */
+  .area-detalhes {
+    flex-basis: 60%;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border: 1px solid #8b9a3b;
+  }
 
-.slot-padoque {
-  height: 100px;
-  border: 1px dashed #8b9a3b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
+  .lista-mestre {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 40%;
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border: 1px solid #8b9a3b;
+    overflow-y: auto; 
+    
+  }
 
-.slot-padoque.ocupado {
-  background-color: rgba(139, 154, 59, 0.2);
-  border-style: solid;
-}
+  .lista-mestre ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+  }
 
-.catalogo-especimes ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0.5rem 0 0 0;
-}
+  .lista-mestre li {
+    padding: 0.8rem 0.5rem;
+    border-bottom: 1px solid #3c5d33;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
 
-.catalogo-especimes li {
-  padding: 0.5rem;
-  border-bottom: 1px solid #3c5d33;
-}
+  .lista-mestre li:hover {
+    background-color: rgba(139, 154, 59, 0.2);
+  }
 
-.botao-voltar {
-  width: 50px;
-  height: 50px;
-  background-image: url(../lib/assets/images/botao-pesquisa.png);
-}
+  .lista-mestre li.ativo {
+    background-color: #8b9a3b;
+    color: #1a1a1a;
+    font-weight: bold;
+  }
+
+  .detalhes-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .info-dino {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #8b9a3b;
+    padding-bottom: 0.5rem;
+  }
+
+  .catalogo-especimes ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+  }
+
+  .catalogo-especimes li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #3c5d33;
+  }
+
+  .botao-voltar {
+    width: 50px;
+    height: 50px;
+    background-image: url(../lib/assets/images/frasco.png);
+  }
 </style>
