@@ -6,6 +6,8 @@
 
   let fosseisInventario = [];
   let dinosNoParque = [];
+  let sitiosDesbloqueados = ['brasil'];
+  let sitioAtivoId = 'brasil'; 
   let escavacaoEmAndamento = false;
   let alertaFossil = '';
   let proximoIdInstanciaDino = 1;
@@ -45,80 +47,77 @@
     { nome: 'Dente', cargaGenoma: 4, raridade: 'Muito Comum' },
   ];
 
-  const dinosDoBrasil = [
-    { 
-      id: 1, 
-      nome: 'Staurikosaurus pricei',
-      rendaGerada: 80,
-      custoManutencao: 30,
-      periodo: 'Triássico Superior',
-      alimentacao: 'Carnívoro',
-      caracteristicas: 'Bípede, ágil, um dos primeiros dinossauros conhecidos.',
-      tamanho: '2m de comprimento, 0.8m de altura',
-      peso: '30 kg',
-      tamanhoVsHumano: 'Cerca de metade da altura de um humano (0.47x)'
+  const dadosDosSitios = {
+    brasil: {
+      id: 'brasil',
+      nome: 'Brasil',
+      custoDesbloqueio: 0,
+      especimes: [
+        { id: 1, nome: 'Staurikosaurus', rendaGerada: 80, custoManutencao: 30, periodo: 'Triássico Superior', alimentacao: 'Carnívoro', caracteristicas: 'Bípede, ágil, um dos primeiros dinossauros conhecidos.' },
+        { id: 2, nome: 'Irritator', rendaGerada: 150, custoManutencao: 50, periodo: 'Cretáceo Inferior', alimentacao: 'Piscívoro/Carnívoro', caracteristicas: 'Crânio longo e estreito, similar ao de um crocodilo.' },
+        { id: 3, nome: 'Oxalaia', rendaGerada: 280, custoManutencao: 80, periodo: 'Cretáceo Superior', alimentacao: 'Piscívoro/Carnívoro', caracteristicas: 'O maior espinossaurídeo do Brasil, provavelmente com uma vela nas costas.' },
+        { id: 4, nome: 'Santanaraptor', rendaGerada: 70, custoManutencao: 25, periodo: 'Cretáceo Inferior', alimentacao: 'Carnívoro', caracteristicas: 'Predador pequeno e veloz, parente primitivo do T-Rex.' },
+        { id: 5, nome: 'Uberabatitan', rendaGerada: 300, custoManutencao: 120, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Titanossauro de pescoço longo com corpo robusto.' },
+        { id: 6, nome: 'Pycnonemosaurus', rendaGerada: 350, custoManutencao: 100, periodo: 'Cretáceo Superior', alimentacao: 'Carnívoro', caracteristicas: 'Grande predador com braços muito curtos e cabeça robusta.' }
+      ]
     },
-    { 
-      id: 2, 
-      nome: 'Irritator challengeri',
-      rendaGerada: 150,
-      custoManutencao: 50,
-      periodo: 'Cretáceo Inferior',
-      alimentacao: 'Piscívoro/Carnívoro',
-      caracteristicas: 'Crânio longo e estreito, similar ao de um crocodilo, com dentes cônicos.',
-      tamanho: '8m de comprimento',
-      peso: '1 tonelada',
-      tamanhoVsHumano: 'Comprimento de quase 5 humanos enfileirados (4.7x)'
+    argentina: {
+      id: 'argentina',
+      nome: 'Argentina',
+      custoDesbloqueio: 50000,
+      especimes: [
+        { id: 7, nome: 'Argentinosaurus', rendaGerada: 450, custoManutencao: 250, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Um dos maiores animais terrestres de todos os tempos, de pescoço e cauda longos.' },
+        { id: 8, nome: 'Giganotosaurus', rendaGerada: 480, custoManutencao: 200, periodo: 'Cretáceo Superior', alimentacao: 'Carnívoro', caracteristicas: 'Predador gigante que rivalizava com o T-Rex em tamanho, conhecido por caçar em grupos.' },
+        { id: 9, nome: 'Carnotaurus', rendaGerada: 380, custoManutencao: 120, periodo: 'Cretáceo Superior', alimentacao: 'Carnívoro', caracteristicas: 'Famoso por seus dois chifres acima dos olhos e braços extremamente curtos.' },
+        { id: 10, nome: 'Patagotitan', rendaGerada: 460, custoManutencao: 260, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Outro titanossauro colossal, considerado por muitos o animal mais pesado que já andou na Terra.' },
+        { id: 11, nome: 'Eoraptor', rendaGerada: 60, custoManutencao: 20, periodo: 'Triássico Superior', alimentacao: 'Onívoro', caracteristicas: 'Um dos primeiros dinossauros, pequeno e bípede, elo importante na evolução dos dinossauros.' },
+        { id: 12, nome: 'Herrerasaurus', rendaGerada: 90, custoManutencao: 35, periodo: 'Triássico Superior', alimentacao: 'Carnívoro', caracteristicas: 'Outro dinossauro primitivo, mas maior e mais robusto que o Eoraptor.' }
+      ]
     },
-    { 
-      id: 3, 
-      nome: 'Oxalaia quilombensis',
-      rendaGerada: 280,
-      custoManutencao: 80,
-      periodo: 'Cretáceo Superior',
-      alimentacao: 'Piscívoro/Carnívoro',
-      caracteristicas: 'O maior espinossaurídeo do Brasil, provavelmente com uma vela nas costas.',
-      tamanho: '14m de comprimento',
-      peso: '5 a 7 toneladas',
-      tamanhoVsHumano: 'Comprimento de mais de 8 humanos enfileirados (8.2x)'
+    canada: {
+      id: 'canada',
+      nome: 'Canadá',
+      custoDesbloqueio: 75000,
+      especimes: [
+        { id: 13, nome: 'Albertosaurus', rendaGerada: 360, custoManutencao: 110, periodo: 'Cretáceo Superior', alimentacao: 'Carnívoro', caracteristicas: 'Um tiranossaurídeo mais leve e ágil que o T-Rex, provavelmente caçava em bandos.' },
+        { id: 14, nome: 'Edmontosaurus', rendaGerada: 250, custoManutencao: 130, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Grande dinossauro "bico de pato" (hadrossauro), conhecido por viver em grandes manadas.' },
+        { id: 15, nome: 'Corythosaurus', rendaGerada: 260, custoManutencao: 115, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Hadrossauro famoso por sua crista alta e arredondada, semelhante a um capacete coríntio.' },
+        { id: 16, nome: 'Pachyrhinosaurus', rendaGerada: 290, custoManutencao: 150, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Parente do Triceratops, mas em vez de chifres, possuía uma grande calosidade óssea no nariz.' },
+        { id: 17, nome: 'Daspletosaurus', rendaGerada: 390, custoManutencao: 140, periodo: 'Cretáceo Superior', alimentacao: 'Carnívoro', caracteristicas: 'Tiranossauro grande e robusto, um predador de topo de seu tempo, um pouco mais antigo que o T-Rex.' },
+        { id: 18, nome: 'Parasaurolophus', rendaGerada: 310, custoManutencao: 125, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Famoso por sua longa crista tubular na parte de trás da cabeça, usada para vocalização.' }
+      ]
     },
-    { 
-      id: 4, 
-      nome: 'Santanaraptor placidus',
-      rendaGerada: 70,
-      custoManutencao: 25,
-      periodo: 'Cretáceo Inferior',
-      alimentacao: 'Carnívoro',
-      caracteristicas: 'Predador pequeno e veloz, parente primitivo do T-Rex.',
-      tamanho: '1.5m de comprimento',
-      peso: '20 kg',
-      tamanhoVsHumano: 'Ligeiramente menor em comprimento que um humano (0.88x)'
+    china: {
+      id: 'china',
+      nome: 'China',
+      custoDesbloqueio: 120000,
+      especimes: [
+        { id: 19, nome: 'Yutyrannus', rendaGerada: 420, custoManutencao: 150, periodo: 'Cretáceo Inferior', alimentacao: 'Carnívoro', caracteristicas: 'Grande tiranossauro primitivo coberto de filamentos semelhantes a penas, provando a ligação entre dinos e aves.' },
+        { id: 20, nome: 'Microraptor', rendaGerada: 90, custoManutencao: 20, periodo: 'Cretáceo Inferior', alimentacao: 'Carnívoro', caracteristicas: 'Pequeno dinossauro com penas em todos os quatro membros, capaz de planar ou voar ativamente.' },
+        { id: 21, nome: 'Mamenchisaurus', rendaGerada: 340, custoManutencao: 190, periodo: 'Jurássico Superior', alimentacao: 'Herbívoro', caracteristicas: 'Saurópode notável por ter um dos pescoços mais longos em proporção ao corpo, com 19 vértebras.' },
+        { id: 22, nome: 'Tsintaosaurus', rendaGerada: 240, custoManutencao: 100, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Dinossauro "bico de pato" com uma crista estranha, semelhante a um espeto, apontando para a frente.' },
+        { id: 23, nome: 'Sinosauropteryx', rendaGerada: 85, custoManutencao: 15, periodo: 'Cretáceo Inferior', alimentacao: 'Carnívoro', caracteristicas: 'O primeiro dinossauro (fora as aves) a ter sua cor determinada, com uma cauda listrada em laranja e branco.' },
+        { id: 24, nome: 'Guanlong', rendaGerada: 300, custoManutencao: 90, periodo: 'Jurássico Superior', alimentacao: 'Carnívoro', caracteristicas: 'Um dos tiranossauroides mais antigos, conhecido por sua grande e elaborada crista no topo da cabeça.' }
+      ]
     },
-    { 
-      id: 5, 
-      nome: 'Uberabatitan riberoi',
-      rendaGerada: 300,
-      custoManutencao: 120,
-      periodo: 'Cretáceo Superior',
-      alimentacao: 'Herbívoro',
-      caracteristicas: 'Titanossauro de pescoço longo com corpo robusto e pernas como colunas.',
-      tamanho: '15m de comprimento, 4m de altura',
-      peso: '16 toneladas',
-      tamanhoVsHumano: 'Altura de mais de 2 vezes um humano (2.35x)'
-    },
-    { 
-      id: 6, 
-      nome: 'Pycnonemosaurus nevesi',
-      rendaGerada: 350,
-      custoManutencao: 100,
-      periodo: 'Cretáceo Superior',
-      alimentacao: 'Carnívoro',
-      caracteristicas: 'Grande predador com braços muito curtos e cabeça robusta.',
-      tamanho: '9m de comprimento, altura de 3m',
-      peso: '2 a 3 toneladas',
-      tamanhoVsHumano: 'Quase 2 vezes a altura de um humano (1.76x)'
-    },
-  ];
+    eua: {
+      id: 'eua',
+      nome: 'EUA',
+      custoDesbloqueio: 200000,
+      especimes: [
+        { id: 25, nome: 'Tyrannosaurus Rex', rendaGerada: 500, custoManutencao: 220, periodo: 'Cretáceo Superior', alimentacao: 'Carnívoro', caracteristicas: 'O "Rei Tirano", famoso por sua mordida poderosa, braços pequenos e status de ícone cultural.' },
+        { id: 26, nome: 'Triceratops', rendaGerada: 320, custoManutencao: 140, periodo: 'Cretáceo Superior', alimentacao: 'Herbívoro', caracteristicas: 'Grande dinossauro com três chifres faciais e um folho ósseo para defesa.' },
+        { id: 27, nome: 'Stegosaurus', rendaGerada: 330, custoManutencao: 130, periodo: 'Jurássico Superior', alimentacao: 'Herbívoro', caracteristicas: 'Conhecido por sua dupla fileira de placas ósseas nas costas e quatro espigões na cauda (thagomizer).' },
+        { id: 28, nome: 'Allosaurus', rendaGerada: 400, custoManutencao: 160, periodo: 'Jurássico Superior', alimentacao: 'Carnívoro', caracteristicas: 'O principal predador de seu tempo, antes do T-Rex. Conhecido por sua grande garra e crânio leve.' },
+        { id: 29, nome: 'Diplodocus', rendaGerada: 310, custoManutencao: 180, periodo: 'Jurássico Superior', alimentacao: 'Herbívoro', caracteristicas: 'Saurópode extremamente longo, com uma cauda em forma de chicote que podia ser usada para defesa.' },
+        { id: 30, nome: 'Apatosaurus', rendaGerada: 300, custoManutencao: 170, periodo: 'Jurássico Superior', alimentacao: 'Herbívoro', caracteristicas: 'Anteriormente conhecido como Brontossauro, era um saurópode massivo e robusto.' }
+      ]
+    }
+  };
+
+  const todasAsEspecies = Object.values(dadosDosSitios).flatMap(sitio => sitio.especimes);
+
+
 
   function escavar() {
     if (escavacaoEmAndamento) return; 
@@ -134,7 +133,7 @@
 
     setTimeout(() => {
       let mensagemAlerta = ''; 
-      const dinoEncontrado = dinosDoBrasil[Math.floor(Math.random() * dinosDoBrasil.length)];
+      const dinoEncontrado = especiesDoSitioAtivo[Math.floor(Math.random() * especiesDoSitioAtivo.length)];
       const parteEncontrada = tiposDeFosseis[Math.floor(Math.random() * tiposDeFosseis.length)];
       const fossilExistente = fosseisInventario.find(f => f.dinoId === dinoEncontrado.id);
 
@@ -216,9 +215,8 @@
       return;
     }
     
-    // 1. Encontra os dados completos da espécie no nosso catálogo
-    const especieInfo = dinosDoBrasil.find(d => d.id === fossilPronto.dinoId);
-    if (!especieInfo) return; // Segurança: Se não encontrar a espécie, cancela.
+    const especieInfo = todasAsEspecies.find(d => d.id === fossilPronto.dinoId);
+    if (!especieInfo) return; 
 
     dinheiro -= custoIncubacao;
 
@@ -317,9 +315,6 @@
     }
   }
 
-    $: infoCientificaDino = dinoSelecionado // <- reage a seleção do dino puxando as informações dele
-    ? dinosDoBrasil.find(d => d.id === dinoSelecionado.id) 
-    : null;
 
   function recalcularRendaTotal() {
     let novaRendaTotal = 0;
@@ -376,6 +371,45 @@
       console.error('Erro ao carregar o jogo salvo:', error);
     }
   }
+
+  function desbloquearSitio(sitioParaComprar) {
+    if (dinheiro >= sitioParaComprar.custoDesbloqueio) {
+      // Transação
+      dinheiro -= sitioParaComprar.custoDesbloqueio;
+      
+      // Atualiza o estado
+      sitiosDesbloqueados = [...sitiosDesbloqueados, sitioParaComprar.id];
+
+      // Feedback para o jogador
+      alert(`Parabéns! O sítio de escavação em ${sitioParaComprar.nome} foi desbloqueado!`);
+
+    } else {
+      alert('Dinheiro insuficiente para desbloquear este sítio.');
+    }
+  }
+
+  function selecionarSitio(idDoSitio) {
+    if (sitiosDesbloqueados.includes(idDoSitio)) {
+      sitioAtivoId = idDoSitio;
+    } else {
+      // Lógica de Desbloqueio
+      const sitioParaDesbloquear = dadosDosSitios[idDoSitio];
+      
+      // confirm() retorna 'true' se o usuário clicar em "OK"
+      const querComprar = confirm(
+        `Deseja desbloquear o sítio em ${sitioParaDesbloquear.nome} por $${sitioParaDesbloquear.custoDesbloqueio}?`
+      );
+
+      if (querComprar) {
+        desbloquearSitio(sitioParaDesbloquear);
+      }
+    }
+  }
+
+  $: infoCientificaDino = dinoSelecionado  // <- reage a seleção do dino puxando as informações dele
+  ? todasAsEspecies.find(d => d.id === dinoSelecionado.id) : null;
+
+  $: especiesDoSitioAtivo = dadosDosSitios[sitioAtivoId].especimes; // <- reage à troca de sitio ativo
 </script>
 
 <main class="tela-principal">
@@ -402,15 +436,21 @@
 
       <section class="secao-escavacao">
         <nav class="abas-sitios">
-          <button class="aba-sitio ativo">Brasil</button>
-          <button class="aba-sitio">Argentina</button>
-          <button class="aba-sitio">China</button>
-          <button class="aba-sitio">EUA</button>
+          {#each Object.values(dadosDosSitios) as sitio}
+            <button 
+              class="aba-sitio"
+              class:ativo={sitio.id === sitioAtivoId}
+              class:bloqueado={!sitiosDesbloqueados.includes(sitio.id)}
+              on:click={() => selecionarSitio(sitio.id)}
+            >
+              {sitio.nome}
+            </button>
+          {/each}
         </nav>
 
         <div class="info-sitio">
           <div class="imagem-sitio">
-            <p>Brasil</p> 
+          <p>{dadosDosSitios[sitioAtivoId].nome}</p>
             <button class="botao-escavar" on:click={escavar} disabled={escavacaoEmAndamento}>
               {#if escavacaoEmAndamento}
                 Escavando...
@@ -422,7 +462,7 @@
           <div class="lista-dinossauros">
             <h3>Espécimes Disponíveis:</h3>
             <ul>
-              {#each dinosDoBrasil as dino}
+              {#each especiesDoSitioAtivo as dino}
                 <li>{dino.nome}</li>
               {/each}
             </ul>
@@ -615,6 +655,17 @@
   .abas-sitios {
     display: flex;
     gap: 0.5rem;
+  }
+
+  .aba-sitio.bloqueado {
+    background-color: #304d2384;
+    color: #888;
+    cursor: not-allowed;
+    border-color: #555;
+  }
+  
+  .aba-sitio.bloqueado:hover {
+    background-color: #374d36; /* Impede o efeito hover */
   }
 
   .info-sitio {
