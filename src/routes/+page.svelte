@@ -15,6 +15,10 @@
   const custoEscavacao = 250;
   const custoPesquisa = 100;
   const custoIncubacao = 1000;
+  const custoAlimentacao = 50;
+  const pontosAlimentacao = 1; // ganho ao alimentar
+  const custoEstudo = 75;
+  const pontosEstudo = 1; // ganho ao estudar
 
   onMount(() => {
     const intervalo = setInterval(() => {
@@ -222,6 +226,9 @@
       nome: fossilPronto.nome,
       renda: especieInfo.rendaGerada,      
       custo: especieInfo.custoManutencao,  
+      estagio: 'Filhote', 
+      pontosEvolucao: 0,
+      pontosParaProximoEstagio: 100 
     };
     
     dinosNoParque = [...dinosNoParque, novoDinossauro];
@@ -234,6 +241,78 @@
 
   function selecionarDino(dino) {
     dinoSelecionado = dino;
+  }
+
+  const evolucaoConfig = {
+    'Filhote': { proximoEstagio: 'Jovem',  metaPontos: 100,  multiplicadorRenda: 1.5, multiplicadorCusto: 1.2 },
+    'Jovem':   { proximoEstagio: 'Adulto', metaPontos: 250,  multiplicadorRenda: 2.0, multiplicadorCusto: 1.5 },
+    'Adulto':  { proximoEstagio: 'Alpha',  metaPontos: 500,  multiplicadorRenda: 2.5, multiplicadorCusto: 2.0 },
+    'Alpha':   null 
+  };
+
+  function alimentarDino(dinoAlvo) {
+    if (dinheiro < custoAlimentacao) {
+      alert('Dinheiro insuficiente para alimentar.');
+      return;
+    }
+    
+    dinheiro -= custoAlimentacao;
+    dinoAlvo.pontosEvolucao += pontosAlimentacao;
+
+    dinoSelecionado = dinoSelecionado; 
+    dinosNoParque = [...dinosNoParque];
+
+    verificarEvolucao(dinoAlvo);
+
+  }
+
+  function estudarDino(dinoAlvo) {
+    if (dinheiro < custoEstudo) {
+      alert('Dinheiro insuficiente para estudar o espécime.');
+      return;
+    }
+    
+    dinheiro -= custoEstudo;
+    dinoAlvo.pontosEvolucao += pontosEstudo;
+
+    dinoSelecionado = dinoSelecionado; 
+    dinosNoParque = [...dinosNoParque];
+
+    verificarEvolucao(dinoAlvo);
+  }
+
+  function verificarEvolucao(dinoAlvo) {
+    if (dinoAlvo.pontosEvolucao >= dinoAlvo.pontosParaProximoEstagio) {
+      // EVOLUIU!
+      const configEstagioAtual = evolucaoConfig[dinoAlvo.estagio];
+      
+      if (configEstagioAtual && configEstagioAtual.proximoEstagio) {
+        // Guarda o "excesso" de pontos
+        const pontosExcedentes = dinoAlvo.pontosEvolucao - dinoAlvo.pontosParaProximoEstagio;
+
+        // Atualiza o estágio
+        dinoAlvo.estagio = configEstagioAtual.proximoEstagio;
+
+        // Atualiza os atributos
+        dinoAlvo.renda = Math.round(dinoAlvo.renda * configEstagioAtual.multiplicadorRenda);
+        dinoAlvo.custo = Math.round(dinoAlvo.custo * configEstagioAtual.multiplicadorCusto);
+
+        // Define a nova meta de pontos
+        const configProximoEstagio = evolucaoConfig[dinoAlvo.estagio];
+        if (configProximoEstagio) {
+          dinoAlvo.pontosParaProximoEstagio = configProximoEstagio.metaPontos;
+          dinoAlvo.pontosEvolucao = pontosExcedentes; // Começa a nova barra com os pontos excedentes
+        } else {
+          // Atingiu o estágio final (Alpha)
+          dinoAlvo.pontosEvolucao = dinoAlvo.pontosParaProximoEstagio; // Preenche a barra
+        }
+
+        // Recalcula a renda total do parque com os novos valores
+        recalcularRendaTotal();
+        
+        alert(`${dinoAlvo.nome} #${dinoAlvo.instanceId} evoluiu para o estágio ${dinoAlvo.estagio}!`);
+      }
+    }
   }
 
     $: infoCientificaDino = dinoSelecionado // <- reage a seleção do dino puxando as informações dele
@@ -351,6 +430,39 @@
             <div class="info-dino descricao"><strong>Características:</strong> <p>{infoCientificaDino.caracteristicas}</p></div>
             <div class="info-dino renda"><strong>Renda Gerada:</strong> <span>${dinoSelecionado.renda}/s</span></div>
 
+            <div class="gerenciamento-instancia">
+              <h4>Gerenciamento da Instância</h4>
+              
+              <div class="info-dino">
+                <strong>Estágio:</strong>
+                <span>{dinoSelecionado.estagio}</span>
+              </div>
+
+              <div class="info-dino">
+                <strong>Evolução:</strong>
+                <div class="progress-bar-track">
+                  <div 
+                    class="progress-bar-fill evolucao" 
+                    style="width: { (dinoSelecionado.pontosEvolucao / dinoSelecionado.pontosParaProximoEstagio) * 100 }%;"
+                  >
+                  </div>
+                </div>
+              </div>
+              <span>{dinoSelecionado.pontosEvolucao} / {dinoSelecionado.pontosParaProximoEstagio} P.E.</span>
+
+                  {#if dinoSelecionado.estagio !== 'Alpha'}
+                    <div class="acoes-dino">
+                      <button on:click={() => alimentarDino(dinoSelecionado)}>
+                        Alimentar (${custoAlimentacao})
+                      </button>
+                      <button on:click={() => estudarDino(dinoSelecionado)}>
+                        Estudar (${custoEstudo})
+                      </button>
+                    </div>
+                  {:else}
+                    <p class="info-estado">Estágio Máximo Atingido!</p>
+                  {/if}
+            </div>
           {:else}
             <div class="detalhes-placeholder">
               <p>Selecione um dinossauro na lista para ver os detalhes.</p>
@@ -662,5 +774,32 @@
     width: 50px;
     height: 50px;
     background-image: url(../lib/assets/images/frasco.png);
+  }
+
+  /* ESTILOS PARA A SEÇÃO DE GERENCIAMENTO DE INSTÂNCIA */
+  .gerenciamento-instancia {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid #3c5d33;
+  }
+
+  .gerenciamento-instancia h4 {
+    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    color: #c7d187;
+  }
+
+  .progress-bar-fill.evolucao {
+    background-color: #5a9bd6; 
+  }
+
+  .acoes-dino {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .info-dino.descricao {
+    border-bottom: none;
   }
 </style>
