@@ -1,6 +1,11 @@
 <script>
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
+  import brasilImg from '$lib/assets/images/sites/brasil.png';
+  import argentinaImg from '$lib/assets/images/sites/argentina.jpg';
+  import canadaImg from '$lib/assets/images/sites/canada.jpg';
+  import chinaImg from '$lib/assets/images/sites/china.jpg';
+  import euaImg from '$lib/assets/images/sites/eua.jpg';
 
   let vistaAtual = 'pesquisa';
 
@@ -33,6 +38,14 @@
       clearInterval(intervalo)
     };
   });
+
+  const imagensDosSitios = {
+    brasil: brasilImg,
+    argentina: argentinaImg,
+    canada: canadaImg,
+    china: chinaImg,
+    eua: euaImg,
+  };
 
   const tiposDeFosseis = [
     { nome: 'Âmbar com Inseto', cargaGenoma: 35, raridade: 'Lendário' },
@@ -449,7 +462,7 @@
         </nav>
 
         <div class="info-sitio">
-          <div class="imagem-sitio">
+          <div class="imagem-sitio" style="background-image: url({imagensDosSitios[sitioAtivoId]});">
           <p>{dadosDosSitios[sitioAtivoId].nome}</p>
             <button class="botao-escavar" on:click={escavar} disabled={escavacaoEmAndamento}>
               {#if escavacaoEmAndamento}
