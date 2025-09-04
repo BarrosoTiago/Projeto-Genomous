@@ -18,7 +18,7 @@
   let proximoIdInstanciaDino = 1;
   let dinoSelecionado = null;
   let dinheiro = 5000; // conforme RF-MVP-01
-  let rendaPorSegundo = 10000;
+  let rendaPorSegundo = 5;
   const custoEscavacao = 250;
   const custoPesquisa = 100;
   const custoIncubacao = 1000;
@@ -183,7 +183,7 @@
       escavacaoEmAndamento = false;
       console.log('Escavação concluída.');
 
-    }, 100); 
+    }, 20000); 
   }
 
 
@@ -337,7 +337,7 @@
       novaRendaTotal -= dino.custo;
     }
 
-    const rendaBaseDoParque = 30;
+    const rendaBaseDoParque = 5;
     rendaPorSegundo = rendaBaseDoParque + novaRendaTotal;
   }
 
